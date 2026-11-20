@@ -1,6 +1,6 @@
-import {performanceGuide} from './performance-guide.mjs?v=8';
-import {TYPES,nextStep} from './simple-flow.mjs?v=8';
-import {EASY_TYPES,easyFlow,shortEvidence} from './easy-guide.mjs?v=8';
+import {performanceGuide} from './performance-guide.mjs?v=9';
+import {TYPES,nextStep} from './simple-flow.mjs?v=9';
+import {EASY_TYPES,easyFlow,shortEvidence} from './easy-guide.mjs?v=9';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let type=null,topic='termination',answers={},history=[];
@@ -11,7 +11,7 @@ function comparison(rows,title){return `<section class="case-compare"><h3>${esc(
 function detailsFor(r){
  const raw=r.original,g=performanceGuide(activeType(),answers,raw);
  const title=type==='freelance'?'특고 종료일을 정하는 방법·예외 확인':type==='success'?'수당을 받기 전에 확인할 조건·예외':'처리 전에 확인할 조건·예외';
- return `<section class="support"><h3>${type==='success'?'신청할 때 놓치지 마세요':'실적·자료에서 놓치지 마세요'}</h3>${list(shortEvidence(activeType(),answers,r))}</section>
+ return `${g.comparison?comparison(g.comparison.rows,g.comparison.title):''}<section class="support"><h3>${type==='success'?'신청할 때 놓치지 마세요':'실적·자료에서 놓치지 마세요'}</h3>${list(shortEvidence(activeType(),answers,r))}</section>
  <details class="note"><summary>${title}</summary><p>${esc(raw.why)}</p>${list(raw.steps)}${raw.note?`<p>${esc(raw.note)}</p>`:''}${type!=='success'?'<p>실제 종료는 고용센터 결정과 필요한 결재를 확인하세요. 불이익 처분은 사전통지·의견청취가 원칙입니다. 종료 사실·이유를 적은 서면통지와 불복 안내도 필요합니다. 매뉴얼 115~117쪽의 예외·절차를 함께 확인하세요.</p>':''}</details>
  <details class="note"><summary>${type==='success'?'신청서류·공통 지급조건 자세히':'실적 인정·증빙자료 자세히'}</summary><h3>${esc(g.title)}</h3><p>${esc(g.scope)}</p><dl>${g.tasks.map(t=>`<dt>${esc(t.when)}</dt><dd>${esc(t.text)}</dd>`).join('')}</dl><p>${esc(g.caution)}</p><p>${esc(g.common)}</p>${(g.checks||[]).map(c=>`<details class="audit-check"><summary>${esc(c.title)}</summary>${list(c.lines)}<p>근거: ${esc(c.source)}</p></details>`).join('')}<p>근거: ${esc(g.source)}</p></details>
  <details class="source"><summary>매뉴얼·공식 근거 보기</summary><p>${esc(raw.source)}</p>${raw.sourceUrl?`<a href="${esc(raw.sourceUrl)}" target="_blank" rel="noopener">공식 자료 열기 ↗</a>`:''}</details>`;
@@ -32,7 +32,7 @@ function render(){
   main+=`<div class="decision ${r.status}"><div class="decision-label"><span class="status-dot"></span>이 경우에는 이렇게 하세요</div>${r.calculation?`<p class="calculation">${esc(r.calculation)}</p>`:''}<h2>${esc(r.title)}</h2><p>${esc(r.why)}</p></div>
   ${r.warning?`<p class="essential"><b>꼭 확인</b> ${esc(r.warning)}</p>`:''}
   <section class="quick-facts"><div><h3>${type==='success'?'언제부터 세나요?':'날짜는 어떻게 넣나요?'}</h3><p>${esc(r.date)}</p></div><div><h3>무엇을 받아두나요?</h3><p>${esc(r.papers)}</p></div></section>
-  ${r.example?comparison(r.example.rows,r.example.title):''}
+  ${r.example?`<p class="hint">${r.example.title.startsWith('매뉴얼')?'매뉴얼 사례를 쉽게 풀어 쓴 예시입니다.':'이해를 돕기 위해 만든 예시입니다. 공식 판정 사례가 아닙니다.'}</p>${comparison(r.example.rows,r.example.title)}`:''}
   <section class="method"><h3>지금 할 일</h3><ol>${r.steps.slice(0,3).map(s=>`<li>${esc(s)}</li>`).join('')}</ol></section>
   ${type==='return'?'<button type="button" id="moveGuide" class="next-guide">직장을 옮긴 뒤 취성수는 어떻게 되나요? →</button>':''}
   ${r.related==='return'?'<button type="button" id="continueGuide" class="next-guide">국취에 다시 참여하는 방법 보기 →</button>':''}
@@ -53,6 +53,6 @@ $('content').onclick=e=>{
  else if(b.id==='print'){document.querySelectorAll('#content details').forEach(d=>d.open=true);window.print();}
 };
 $('content').addEventListener('submit',e=>{if(e.target.id!=='amountForm')return;e.preventDefault();const value=new FormData(e.target).get('grossAmount');const candidate={...answers,grossAmount:value};const f=nextStep(activeType(),candidate);answers=candidate;if(!f.question||f.question.id!=='grossAmount')history.push({id:'grossAmount',label:'세전 수입 '+Number(value).toLocaleString('ko-KR')+'원'});render();});
-$('version').textContent='2026년 기준 · 2026.11.20 쉬운 설명으로 정리';
+$('version').textContent='2026년 기준 · 2026.11.21 특고 소득·실적 구분 보완';
 render();
 

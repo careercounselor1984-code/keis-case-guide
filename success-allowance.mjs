@@ -1,4 +1,4 @@
-import {spaceFlow} from './complex-rules.mjs?v=8';
+import {spaceFlow} from './complex-rules.mjs?v=9';
 const q=(id,title,options,hint='')=>({question:{id,title,hint,options:options.map(([value,label])=>({value,label}))}});
 const has=(a,k)=>Object.hasOwn(a,k);
 const source='2026 업무매뉴얼 본문 220~232쪽 / 고용24 국민취업지원제도 안내';
