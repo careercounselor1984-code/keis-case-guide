@@ -1,4 +1,4 @@
-import {successEvidence} from './success-allowance.mjs?v=7';
+import {successEvidence} from './success-allowance.mjs?v=8';
 const common='2026년 평가(2025.11.1~2026.10.31 종료자) 기준입니다. 행정상 종료·평가 취업자 인정·참여자 취업성공수당은 서로 다른 판단입니다. 기준을 충족하고 공식 검증·반영까지 확인해야 하며 2027년 기준으로 자동 적용하지 않습니다.';
 export function performanceGuide(type,answers={},r={}){
  if(type==='success')return r.evidence||successEvidence();

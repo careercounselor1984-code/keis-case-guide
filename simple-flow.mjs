@@ -1,6 +1,6 @@
-import {freelanceFlow,spaceFlow,directFlow} from './complex-rules.mjs?v=7';
-import {terminationFlow} from './termination-rules.mjs?v=7';
-import {successFlow} from './success-allowance.mjs?v=7';
+import {freelanceFlow,spaceFlow,directFlow} from './complex-rules.mjs?v=8';
+import {terminationFlow} from './termination-rules.mjs?v=8';
+import {successFlow} from './success-allowance.mjs?v=8';
 export const VERSION='2026년 기준 · 2026.11.14 이직·전직과 취성수 연결 보강';
 export const TYPES=[
  {id:'wage',name:'일반·단시간 근로',desc:'정규직 · 계약직 · 아르바이트',icon:'01'},
