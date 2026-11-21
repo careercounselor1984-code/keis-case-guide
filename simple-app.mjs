@@ -1,6 +1,7 @@
-import {performanceGuide} from './performance-guide.mjs?v=9';
-import {TYPES,nextStep} from './simple-flow.mjs?v=9';
-import {EASY_TYPES,easyFlow,shortEvidence} from './easy-guide.mjs?v=9';
+import {performanceGuide} from './performance-guide.mjs?v=10';
+import {TYPES,nextStep} from './simple-flow.mjs?v=10';
+import {EASY_TYPES,easyFlow,shortEvidence} from './easy-guide.mjs?v=10';
+import {basisFor,activityReminder,reentryReminder,REVIEW_DATE} from './review-basis.mjs?v=10';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let type=null,topic='termination',answers={},history=[];
@@ -9,12 +10,15 @@ const currentFlow=()=>easyFlow(activeType(),answers,nextStep(activeType(),answer
 const list=items=>`<ul>${items.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`;
 function comparison(rows,title){return `<section class="case-compare"><h3>${esc(title)}</h3><div class="table-wrap"><table><tbody>${rows.map(row=>`<tr>${row.map((cell,i)=>i===0?`<th scope="row">${esc(cell)}</th>`:`<td>${esc(cell)}</td>`).join('')}</tr>`).join('')}</tbody></table></div></section>`;}
 function detailsFor(r){
- const raw=r.original,g=performanceGuide(activeType(),answers,raw);
+ const raw=r.original,g=performanceGuide(activeType(),answers,raw),basis=basisFor(activeType(),answers);
+ const activity=['yes','conditional'].includes(raw.status)?activityReminder(activeType(),answers,raw):'';
+ const reentry=reentryReminder(activeType(),answers,raw);
  const title=type==='freelance'?'특고 종료일을 정하는 방법·예외 확인':type==='success'?'수당을 받기 전에 확인할 조건·예외':'처리 전에 확인할 조건·예외';
- return `${g.comparison?comparison(g.comparison.rows,g.comparison.title):''}<section class="support"><h3>${type==='success'?'신청할 때 놓치지 마세요':'실적·자료에서 놓치지 마세요'}</h3>${list(shortEvidence(activeType(),answers,r))}</section>
+ return `${raw.paymentRows?comparison(raw.paymentRows,'유예할 때 그 회차 수당은 어떻게 하나요?'):''}${activity?`<p class="essential"><b>그 회차 구직활동·수당</b>${esc(activity)}</p>`:''}${g.comparison?comparison(g.comparison.rows,g.comparison.title):''}<section class="support"><h3>${type==='success'?'신청할 때 놓치지 마세요':'실적·자료에서 놓치지 마세요'}</h3>${list(shortEvidence(activeType(),answers,r))}</section>
  <details class="note"><summary>${title}</summary><p>${esc(raw.why)}</p>${list(raw.steps)}${raw.note?`<p>${esc(raw.note)}</p>`:''}${type!=='success'?'<p>실제 종료는 고용센터 결정과 필요한 결재를 확인하세요. 불이익 처분은 사전통지·의견청취가 원칙입니다. 종료 사실·이유를 적은 서면통지와 불복 안내도 필요합니다. 매뉴얼 115~117쪽의 예외·절차를 함께 확인하세요.</p>':''}</details>
  <details class="note"><summary>${type==='success'?'신청서류·공통 지급조건 자세히':'실적 인정·증빙자료 자세히'}</summary><h3>${esc(g.title)}</h3><p>${esc(g.scope)}</p><dl>${g.tasks.map(t=>`<dt>${esc(t.when)}</dt><dd>${esc(t.text)}</dd>`).join('')}</dl><p>${esc(g.caution)}</p><p>${esc(g.common)}</p>${(g.checks||[]).map(c=>`<details class="audit-check"><summary>${esc(c.title)}</summary>${list(c.lines)}<p>근거: ${esc(c.source)}</p></details>`).join('')}<p>근거: ${esc(g.source)}</p></details>
- <details class="source"><summary>매뉴얼·공식 근거 보기</summary><p>${esc(raw.source)}</p>${raw.sourceUrl?`<a href="${esc(raw.sourceUrl)}" target="_blank" rel="noopener">공식 자료 열기 ↗</a>`:''}</details>`;
+ ${reentry?`<details class="note"><summary>종료 후 다시 참여하려면?</summary><p>${esc(reentry)}</p><p>근거: 업무매뉴얼 119~121쪽 / 법 제27조·제29조 / 시행령 제12~13조 / 운영규정 별표4. 실제 종료사유와 인정기간을 센터에서 확인합니다.</p></details>`:''}
+ <details class="source"><summary>이 판단의 근거 보기 · ${REVIEW_DATE} 대조</summary>${basis.items.map(x=>`<p><b>${esc(x.kind)}</b> · ${esc(x.text)}${x.url?` <a href="${esc(x.url)}" target="_blank" rel="noopener">공식 원문 ↗</a>`:''}</p>`).join('')}<p>${esc(basis.limit)}</p><p>세부 원문 위치: ${esc(raw.source)}</p></details>`;
 }
 function render(){
  $('types').innerHTML=TYPES.map(t=>{const [name,desc]=EASY_TYPES[t.id]||[t.name,t.desc];return `<button type="button" class="type ${type===t.id?'active':''}" data-type="${t.id}" aria-pressed="${type===t.id}"><span>${t.icon}</span><div><b>${esc(name)}</b><small>${esc(desc)}</small></div><i>›</i></button>`;}).join('');
@@ -26,7 +30,7 @@ function render(){
  let main=`<div class="content-top"><span class="section-label">${esc(EASY_TYPES[type][0])}</span><button type="button" id="restart">다른 상황 보기</button></div>${tabs}${trail?`<div class="trail">${trail}</div>`:''}`;
  if(flow.question){
   const q=flow.question;
-  main+=`<div class="question"><p class="small-label">이것만 확인해 주세요.</p><h2>${esc(q.title)}</h2>${q.hint?`<p class="hint">${esc(q.hint)}</p>`:''}${q.error?`<p class="input-error">${esc(q.error)}</p>`:''}${q.input?`<form id="amountForm" class="amount-form"><label for="grossAmount">세금·경비를 빼기 전 수입</label><div><input id="grossAmount" name="grossAmount" type="number" min="0" step="1" inputmode="numeric" placeholder="예: 2750000" value="${esc(answers.grossAmount??'')}"><span>원</span></div><button type="submit">계산하고 처리방법 보기 →</button></form>`:''}<div class="choices">${q.options.map(o=>`<button type="button" data-answer="${esc(o.value)}" data-question="${q.id}"><span>${esc(o.label)}</span><b>→</b></button>`).join('')}</div>${q.comparison?`<details class="question-extra"><summary>이직한 경우, 왜 처리방법이 다른가요?</summary>${comparison(q.comparison,'기간을 합치는 경우와 다시 세는 경우')}</details>`:''}</div>`;
+  main+=`<div class="question"><p class="small-label">이것만 확인해 주세요.</p><h2>${esc(q.title)}</h2>${q.calculation?`<p class="calculation">${esc(q.calculation)}</p>`:""}${q.hint?`<p class="hint">${esc(q.hint)}</p>`:''}${q.error?`<p class="input-error">${esc(q.error)}</p>`:''}${q.input?`<form id="amountForm" class="amount-form"><label for="grossAmount">세금·경비를 빼기 전 수입</label><div><input id="grossAmount" name="grossAmount" type="number" min="0" step="1" inputmode="numeric" placeholder="예: 2750000" value="${esc(answers.grossAmount??'')}"><span>원</span></div><button type="submit">계산하고 처리방법 보기 →</button></form>`:''}<div class="choices">${q.options.map(o=>`<button type="button" data-answer="${esc(o.value)}" data-question="${q.id}"><span>${esc(o.label)}</span><b>→</b></button>`).join('')}</div>${q.comparison?`<details class="question-extra"><summary>이직한 경우, 왜 처리방법이 다른가요?</summary>${comparison(q.comparison,'기간을 합치는 경우와 다시 세는 경우')}</details>`:''}</div>`;
  }else if(flow.result){
   const r=flow.result;
   main+=`<div class="decision ${r.status}"><div class="decision-label"><span class="status-dot"></span>이 경우에는 이렇게 하세요</div>${r.calculation?`<p class="calculation">${esc(r.calculation)}</p>`:''}<h2>${esc(r.title)}</h2><p>${esc(r.why)}</p></div>
@@ -53,6 +57,6 @@ $('content').onclick=e=>{
  else if(b.id==='print'){document.querySelectorAll('#content details').forEach(d=>d.open=true);window.print();}
 };
 $('content').addEventListener('submit',e=>{if(e.target.id!=='amountForm')return;e.preventDefault();const value=new FormData(e.target).get('grossAmount');const candidate={...answers,grossAmount:value};const f=nextStep(activeType(),candidate);answers=candidate;if(!f.question||f.question.id!=='grossAmount')history.push({id:'grossAmount',label:'세전 수입 '+Number(value).toLocaleString('ko-KR')+'원'});render();});
-$('version').textContent='2026년 기준 · 2026.11.21 특고 소득·실적 구분 보완';
+$('version').textContent='2026년 기준 · 2026.11.21 전체 분기 재검토';
 render();
 

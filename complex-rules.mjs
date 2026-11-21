@@ -20,11 +20,11 @@ export function income90(value){
 export function freelanceFlow(a,voluntary){
  const source='업무매뉴얼 44·105~107·231쪽 / 운영규정 제3조제3항제10호';
  if(!has(a,'incomeKnown'))return q('incomeKnown','어떤 금액을 확인할 수 있나요?',[
-  ['gross','인적용역에 해당하고 세전 수입자료가 있어요 (90% 환산)'],['otherBusiness','인적용역인지 모르거나 다른 업종의 매출이에요'],['yes','공적 소득 또는 환산 완료한 소득을 알아요'],['deposit','통장 실입금액만 알아요'],['unknown','소득 자료가 아직 없어요']
+  ['gross','노무제공자·프리랜서의 세전 수입자료가 있어요 (90% 환산)'],['otherBusiness','특고 수입이 아니라 등록 사업체의 업종별 매출을 확인하려고 해요'],['yes','공적 소득 또는 환산 완료한 소득을 알아요'],['deposit','통장 실입금액만 알아요'],['unknown','소득 자료가 아직 없어요']
  ],'수입과 소득을 구분하면 프로그램이 필요한 계산을 안내합니다.');
- if(a.incomeKnown==='otherBusiness')return r('check','업종별 조정률부터 확인하세요','프리랜서라는 명칭만으로 수입의 90%를 소득으로 계산하지 않습니다.',[
-  '실제로 하는 일과 계약·매출자료로 인적용역에 해당하는지 확인합니다.',
-  '사업소득금액을 바로 확인하기 어려운 경우 운영규정 제3조제3항의 해당 업종 조정률을 적용합니다. 인적용역은 90%이며 다른 업종은 비율이 다릅니다.',
+ if(a.incomeKnown==='otherBusiness')return r('check','등록 사업체 매출은 업종별 조정률을 확인하세요','매뉴얼 44쪽은 사업자등록이 없거나 노무제공자·프리랜서인 경우 인적용역으로 간주하여 90%를 일괄 적용합니다. 등록 사업체의 다른 업종 매출과 구분합니다.',[
+  '특고·프리랜서의 노무제공 수입인지, 등록 사업체의 업종별 매출인지 구분합니다.',
+  '등록 사업체의 사업소득금액을 바로 확인하기 어려운 경우 등록 업태·종목과 운영규정 제3조제3항의 업종별 조정률을 확인합니다.',
   '공적자료로 소득금액이 확인되면 그 금액을 사용합니다. 환산한 소득이 확인된 뒤 소득 구간 경로로 다시 확인합니다.'
  ],source,'고용보험 신고 보수액·통장 입금액·세전 수입·확인된 소득금액은 서로 다릅니다.',{sourceUrl:LEGAL.income});
  if(a.incomeKnown==='deposit'||a.incomeKnown==='unknown')return r('check','세전 수입 또는 확인된 소득이 필요합니다','통장에 들어온 금액만으로 10%를 빼서 판단하지 않습니다.',[
@@ -52,7 +52,7 @@ export function freelanceFlow(a,voluntary){
   '다수 업체의 불특정 소득 합산은 IAP 수립 다음 날부터 1개월 단위 주기를 설정하고, 기준 충족 주기의 최초 또는 마지막 소득 발생일 중 협의한 날로 판단합니다.',
   '현재 단계에 맞는 취업 노무제공자 또는 사후관리 취업 노무제공자로 처리합니다.'
  ],source,'취업성공수당은 지속적인 월평균 소득·노무제공기간 등 별도 요건을 확인합니다.');
- if(calc){if(out.result)out.result.calculation=calc.text;else out.question.hint=calc.text+' → 이 구간은 본인 종료 요청이 필요합니다.';}
+ if(calc){if(out.result)out.result.calculation=calc.text;else {out.question.calculation=calc.text;out.question.hint=calc.text+' → 이 구간은 본인 종료 요청이 필요합니다.';}}
  if(out.result)out.result.sourceUrl=LEGAL.income;
  return out;
 }
